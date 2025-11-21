@@ -25,21 +25,46 @@ variables = {
                 'Fantasy', 'Mystery', 'Sci-Fi', 'Thriller']
 }
 
-print("Variável Dependente (target): 'rating'")
-print("Variáveis Independentes: 'year', 'votes', 'certificate', gêneros")
-
-print("\nVALORES PERDIDOS:")
+print("Variavel Dependente (target): 'rating'")
+print("Variaveis Independentes: 'year', 'votes', 'certificate', gêneros")
+print(f"valores duplicaldos:{df_clean.duplicated().sum()}")
+print("\nVALORES Nulos:")
 missing_data = df_clean.isnull().sum()
+missing_data_total = df_clean.isnull().sum().sum()
 print(missing_data[missing_data > 0])
+print(f"Total de valores nulos: {missing_data_total}")
+print(f"Total de linhas no dataset: {df_clean.shape[0]}")
 
 # LIMPEZA DOS DADOS
+
+#TRATAMENTO DE VALORES NULOS
+#votes->substitiuir por zero 
 df_clean['votes'] = df_clean['votes'].str.replace(',', '').astype(float)
-df_clean = df_clean.dropna()
-df_clean = df_clean.drop_duplicates()
-print(f"\nDados após limpeza: {df_clean.shape[0]} linhas")
+df_clean['votes'] = df_clean['votes'].fillna(0)
+
+#rating->substituir pela mediana
+df_clean['rating']=df_clean['rating'].fillna(df_clean['rating'].median())
+
+#year - Manter como nulo ou usar moda
+# Se poucos nulos: eliminar essas linhas
+if df_clean['year'].isna().sum() < len(df_clean) * 0.05:  # menos de 5%
+        df_clean = df_clean.dropna(subset=['year'])
+else:
+        # Se muitos: substituir pela moda 
+        df_clean['year'] = df_clean['year'].fillna(df_clean['year'].mode()[0])
+
+df_clean['certificate'] = df_clean['certificate'].fillna('Not Rated')
+
+print("\nDados apos limpeza:")
+print("VALORES Nulos:")
+missing_data = df_clean.isnull().sum()
+missing_data_total = df_clean.isnull().sum().sum()
+print(missing_data[missing_data > 0])
+print(f"Total de valores nulos: {missing_data_total}")
+print(f"Total de linhas no dataset: {df_clean.shape[0]}")
 
 #so copiei e colei do gpt o boxplot
-print("VISUALIZAÇÃO DE OUTLIERS (BOXPLOTS):")
+print("VISUALIZACAO DE OUTLIERS (BOXPLOTS):")
 fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
 sns.boxplot(data=df_clean, y='rating', ax=axes[0])
@@ -69,22 +94,21 @@ for col in ['rating', 'votes', 'year']:
     outliers = detect_outliers_iqr(df_clean[col])
     print(f"{col}: {len(outliers)} outliers")
 
-print("\n" + "="*50)
+# Normalização Min-Max(FICA COMENTADO POR AGORA PORQUE E CAPAZ DE NAO SE USAR)
+""" print("\n" + "="*50)
 print("NoRMALIZAÇÃO")
-
-# Normalização Min-Max
 scaler = MinMaxScaler()
-df_clean[['rating_norm', 'votes_norm']] = scaler.fit_transform(df_clean[['rating', 'votes']])
+df_clean[['rating_norm', 'votes_norm']] = scaler.fit_transform(df_clean[['rating', 'votes']]) """
 
 # Codificação de variáveis
-certificate_dummies = pd.get_dummies(df_clean['certificate'], prefix='cert')
+""" certificate_dummies = pd.get_dummies(df_clean['certificate'], prefix='cert')
 df_clean = pd.concat([df_clean, certificate_dummies], axis=1)
 
-print("✅ Variáveis categóricas codificadas")
+print("Variáveis categóricas codificadas")
 
 # Variáveis derivadas
 df_clean['engagement_score'] = df_clean['rating'] * np.log1p(df_clean['votes'])
 df_clean['is_modern'] = (df_clean['year'] > 2000).astype(int) #nao sei se e vamos usar
 
-print(df_clean[['rating', 'rating_norm', 'votes', 'votes_norm']].head())
+print(df_clean[['rating', 'rating_norm', 'votes', 'votes_norm']].head()) """
 
