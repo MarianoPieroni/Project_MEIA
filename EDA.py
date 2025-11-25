@@ -20,7 +20,7 @@ print(df_clean.describe(include='all'))
 #CLASSIFICAÇÃO DAS VARIÁVEIS
 variables = {
     'Numericas': ['year', 'rating', 'votes'],
-    'Categoricas': ['name', 'url', 'certificate', 'plot'],
+    'Categoricas': ['certificate'],
     'Binarias': ['Action', 'Adventure', 'Comedy', 'Crime', 'Family', 
                 'Fantasy', 'Mystery', 'Sci-Fi', 'Thriller']
 }
