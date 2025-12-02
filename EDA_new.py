@@ -1,9 +1,8 @@
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler
-import pickle
+from joblib import dump, load
 
 def EDA():
 
@@ -48,31 +47,33 @@ def explore_dataset(df_clean):
 def clean_data(df_clean):
     print("\nINICIANDO LIMPEZA DOS DADOS")
     
+
+    df_processed = df_clean.copy()
     # TRATAMENTO DE VALORES NULOS
     # votes -> substituir por zero 
-    df_clean['votes'] = df_clean['votes'].str.replace(',', '').astype(float)
-    df_clean['votes'] = df_clean['votes'].fillna(0)
+    df_processed['votes'] = df_processed['votes'].str.replace(',', '').astype(float)
+    df_processed['votes'] = df_processed['votes'].fillna(0)
     
     # rating -> substituir pela mediana
-    df_clean['rating'] = df_clean['rating'].fillna(df_clean['rating'].median())
-    
+    df_processed['rating'] = df_processed['rating'].fillna(df_processed['rating'].median())
+    print(f"Mediana de rating: {df_processed['rating'].median()}")
     # year - Eliminar linhas com poucos nulos
-    if df_clean['year'].isna().sum() < len(df_clean) * 0.05:  # menos de 5%
-        df_clean = df_clean.dropna(subset=['year'])
+    if df_processed['year'].isna().sum() < len(df_processed) * 0.05:  # menos de 5%
+        df_processed = df_processed.dropna(subset=['year'])
     else:
-        df_clean['year'] = df_clean['year'].fillna(df_clean['year'].mode()[0])
-    
+        df_processed['year'] = df_processed['year'].fillna(df_processed['year'].mode()[0])
+    print(f"Moda de year: {df_processed['year'].mode()[0]}")
     # certificate -> substituir por 'Not Rated'
-    df_clean['certificate'] = df_clean['certificate'].fillna('Not Rated')
+    df_processed['certificate'] = df_processed['certificate'].fillna('Not Rated')
     
     print("\nDADOS APOS LIMPEZA")
-    missing_data = df_clean.isnull().sum()
-    missing_data_total = df_clean.isnull().sum().sum()
+    missing_data = df_processed.isnull().sum()
+    missing_data_total = df_processed.isnull().sum().sum()
     print(missing_data[missing_data > 0])
     print(f"Total de valores nulos: {missing_data_total}")
-    print(f"Total de linhas no dataset: {df_clean.shape[0]}")
+    print(f"Total de linhas no dataset: {df_processed.shape[0]}")
     
-    return df_clean
+    return df_processed
 
 def detect_outliers(df_clean):
     def detect_outliers_iqr(column):
@@ -93,25 +94,35 @@ def detect_outliers(df_clean):
     
     return outliers_info
 
-def save_cleaned_data(df_clean,genres):
-    print("\nSALVANDO DADOS LIMPOS")
-    
-    # Salvar dados limpos
+def save_cleaned_data(df_clean, genres):  
+    # Salvar dados limpos em CSV
     df_clean.to_csv('cleaned_data.csv', index=False)
     
-    # Salvar informações básicas
-    basic_info = {
+    # Salvar informações básicas com joblib
+    Info = {
         'genres': genres,
         'original_columns': df_clean.columns.tolist(),
-        'data_shape': df_clean.shape
+        'data_shape': df_clean.shape,
+        'genres_summary': {genre: int(df_clean[genre].sum()) for genre in genres},
+        'numeric_stats': {
+            'rating': {
+                'mean': float(df_clean['rating'].mean()),
+                'median': float(df_clean['rating'].median()),
+                'std': float(df_clean['rating'].std())
+            },
+            'votes': {
+                'mean': float(df_clean['votes'].mean()),
+                'median': float(df_clean['votes'].median()),
+                'max': float(df_clean['votes'].max())
+            }
+        }
     }
     
-    with open('basic_info.pkl', 'wb') as f:
-        pickle.dump(basic_info, f)
+    
+    dump(Info, 'Info.joblib', compress=3)  
     
     print(f"Dados limpos salvos em 'cleaned_data.csv'")
-    print(f"Shape dos dados limpos: {df_clean.shape}")
-    print(f"Generos disponiveis: {genres}")
+    print(f"Informacoes basicas salvas em 'Info.joblib'")
     
     return df_clean
 
@@ -128,8 +139,10 @@ def main():
     
     outliers_info = detect_outliers(df_clean)
     
-    df_clean = save_cleaned_data(df_clean,genres)
+    df_clean = save_cleaned_data(df_clean, genres)
     print(f"Dataset final: {df_clean.shape}")
+    print(f"Colunas finais: {df_clean.columns.tolist()}")
+    print(f"generos finais: {genres}")
     
     return df_clean
 
