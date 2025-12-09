@@ -4,7 +4,7 @@ import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler
 from joblib import dump, load
 
-def EDA():
+def Read_Data():
 
     df = pd.read_csv("imdb-videogames.csv")
     df_clean = df.copy()
@@ -128,7 +128,7 @@ def save_cleaned_data(df_clean, genres):
 
 def main():
     
-    df, df_clean = EDA()
+    df, df_clean = Read_Data()
     
     
     variables,genres = explore_dataset(df_clean)
