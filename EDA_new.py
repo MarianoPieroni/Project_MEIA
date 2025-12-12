@@ -57,6 +57,7 @@ def clean_data(df_clean):
     # rating -> substituir pela mediana
     df_processed['rating'] = df_processed['rating'].fillna(df_processed['rating'].median())
     print(f"Mediana de rating: {df_processed['rating'].median()}")
+    
     # year - Eliminar linhas com poucos nulos
     if df_processed['year'].isna().sum() < len(df_processed) * 0.05:  # menos de 5%
         df_processed = df_processed.dropna(subset=['year'])
@@ -66,6 +67,21 @@ def clean_data(df_clean):
     # certificate -> substituir por 'Not Rated'
     df_processed['certificate'] = df_processed['certificate'].fillna('Not Rated')
     
+    generos = ['Action', 'Adventure', 'Comedy', 'Crime', 'Family', 
+               'Fantasy', 'Mystery', 'Sci-Fi', 'Thriller']
+    
+    generos_presentes = [g for g in generos if g in df_processed.columns]
+    print(f"Gêneros encontrados: {generos_presentes}")
+    
+    for genero in generos_presentes:
+        # Verificar tipo
+        tipo = df_processed[genero].dtype
+        valores_unicos = df_processed[genero].unique()
+
+        # Converter para 0/1 se necessário
+        df_processed[genero] = df_processed[genero].astype(int)
+    
+    print(f"    Convertido bool para int (0/1)")
     print("\nDADOS APOS LIMPEZA")
     missing_data = df_processed.isnull().sum()
     missing_data_total = df_processed.isnull().sum().sum()
