@@ -172,7 +172,7 @@ def clustering(df, generos, k_escolhido=10):
         top_jogos = cluster_melhor.nlargest(5, 'rating')[['name', 'rating']]
         
         for idx, jogo in top_jogos.iterrows():
-            print(f"   {jogo['name']} (Rating: {jogo['rating']:.1f})")
+            print(f" {jogo['name']} (Rating: {jogo['rating']:.1f})")
     
     return df, kmeans
 # ============================================
@@ -294,12 +294,12 @@ def criar_visualizacoes(df_com_clusters, analise, generos):
         plt.xticks(rotation=45)
         plt.tight_layout()
         plt.savefig('heatmap_generos.png', dpi=300)
-        plt.show()       
+        plt.show()
 
 # ============================================
 # 7. RESPOSTA A PERGUNTA
 # ============================================
-def responder_pergunta(df, generos, k=10):
+def responder_pergunta_simples(df, generos, k=10):
 
     print(f"\nANALISE: Usando {k} clusters baseados apenas em generos")
     
@@ -336,7 +336,7 @@ def responder_pergunta(df, generos, k=10):
         pct = cluster_df[genero].mean() * 100
         if pct > 50:
             generos_principais.append(genero)
-            print(f"  • {genero}: {pct:.0f}%")
+            print(f"  {genero}: {pct:.0f}%")
     
     
     # Encontrar combinacao mais comum
@@ -404,7 +404,7 @@ def responder_pergunta(df, generos, k=10):
     if generos_principais:
         print(f"Os jogos com maior rating tendem a ter estes generos:")
         for genero in generos_principais:
-            print(f"{genero}")
+            print(f"• {genero}")
         
         print(f"\nEsta combinacao aparece em {len(cluster_df)} jogos")
         print(f"com rating medio de {melhor_rating:.2f}")
@@ -449,11 +449,11 @@ def main():
     
     # 6. Criar visualizacoes
     print("\n6. Criando visualizacoes...")
-    criar_visualizacoes(df_clustered, analise, generos) 
+    criar_visualizacoes(df_clustered, analise, generos)
     
     # 7. Responder pergunta
     print("\n7. Gerando resposta...")
-    responder_pergunta(df_clustered, generos, k=10)
+    responder_pergunta_simples(df_clustered, generos, k=10)
     
     # 8. Salvar resultados
     print("\n8. Salvando resultados...")
