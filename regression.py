@@ -1,0 +1,78 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+import EDA_new as dp
+
+
+def prepare_features(df_clean):
+
+    print("\n--- PREPARANDO DADOS PARA REGRESSÃO ---")
+    df_model = df_clean.copy()
+
+    #remove coluna desnecessarias
+    if 'name' in df_model.columns:
+        df_model = df_model.drop(columns=['name'])
+    if 'plot' in df_model.columns:
+        df_model = df_model.drop(columns=['plot'])    
+    if 'url' in df_model.columns:
+        df_model = df_model.drop(columns=['url'])
+    if 'game_id' in df_model.columns:
+        df_model = df_model.drop(columns=['game_id'])
+
+    # Transformar 'certificate' em colunas numéricas (0 ou 1)
+    if 'certificate' in df_model.columns:
+        print("Realizando One-Hot Encoding na coluna 'certificate'...")
+        df_model = pd.get_dummies(df_model, columns=['certificate'], drop_first=True)
+        
+    # Garantir que tudo é numérico
+    print(f"Colunas finais para o modelo ({df_model.shape[1]}): {df_model.columns.tolist()}")
+    return df_model
+
+def run_linear_regression(df_model):
+    
+    #dividir base
+    target = 'rating'
+    X = df_model.drop(columns=[target]) #teste 
+    y = df_model[target]                #treino
+    
+    # Divisão (80/20)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    print(f"\nDivisão (80/20)")
+    print(f"\nTreino: {X_train.shape[0]} jogos")
+    print(f"Teste:  {X_test.shape[0]} jogos")
+
+    # Criar e Treinar o Modelo
+    model = LinearRegression()
+    model.fit(X_train, y_train)
+    
+    # previsao
+    y_pred = model.predict(X_test)
+    
+    # Avaliação (Erro Médio)
+    r2 = r2_score(y_test, y_pred)
+    mean = mean_absolute_error(y_test, y_pred)
+    
+    print(f"\nRESULTADOS DA REGRESSÇAO LINEAR:")
+    print(f"Score R²: {r2:.4f}")
+    print(f"Erro Médio: {mean:.4f}")
+    print(f"O modelo explica {r2*100:.2f}% da variação nas notas dos jogos.")
+
+    
+    return model, X_train, y_test, y_pred
+
+
+def main_modeling():
+    #importar EDA
+    df_clean = dp.main() 
+    
+    df_model = prepare_features(df_clean)
+    run_linear_regression(df_model)
+    
+
+if __name__ == "__main__":
+    main_modeling()
