@@ -25,7 +25,7 @@ def prepare_features(df_clean):
 
     # Transformar 'certificate' em colunas numéricas (0 ou 1)
     if 'certificate' in df_model.columns:
-        print("Realizando One-Hot Encoding na coluna 'certificate'...")
+   #     print("Realizando One-Hot Encoding na coluna 'certificate'...")
         df_model = pd.get_dummies(df_model, columns=['certificate'], drop_first=True)
         
     # Garantir que tudo é numérico
@@ -43,7 +43,7 @@ def run_linear_regression(df_model):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
     print(f"\nDivisão (80/20)")
-    print(f"\nTreino: {X_train.shape[0]} jogos")
+    print(f"Treino: {X_train.shape[0]} jogos")
     print(f"Teste:  {X_test.shape[0]} jogos")
 
     # Criar e Treinar o Modelo
@@ -65,14 +65,49 @@ def run_linear_regression(df_model):
     
     return model, X_train, y_test, y_pred
 
+def predict(model,X_train):
+    print("\nFazer Previsão de rating")
+
+    generos = [c for c in X_train.columns if c not in ['year', 'votes'] and not c.startswith('certificate')]
+    print(f"Gênero disponiveis: {generos}")
+    genero_input= input("Gênero: ")
+
+    coluna_encontrada = None
+    for col in X_train.columns:
+        if col.lower() == genero_input.lower():
+            coluna_encontrada = col
+            break
+
+    if not coluna_encontrada:
+        print(f"Erro: Gênero '{genero_input}' não encontrado.")
+        return
+    
+
+    year_input = int(input("Digite o Ano de Lançamento: "))
+    input_data = pd.DataFrame(0, index=[0], columns=X_train.columns)
+ 
+    input_data[coluna_encontrada] = 1
+    input_data['year'] = year_input
+    input_data['votes'] = X_train['votes'].median() #usamos a mediana nos votos para nao penalizar a nota
+    
+    # previsao
+    prediction = model.predict(input_data)[0]
+    
+    print("\nRESULTADO DA SIMULAÇÃO")
+    print(f"Jogo: Gênero {coluna_encontrada}, Ano {year_input}")
+    print(f"NOTA PREVISTA: {prediction:.2f} / 10.0")  
+
+    return
+
 
 def main_modeling():
     #importar EDA
     df_clean = dp.main() 
     
     df_model = prepare_features(df_clean)
-    run_linear_regression(df_model)
-    
+    model, X_train, y_test, y_pred = run_linear_regression(df_model)
+
+    predict(model, X_train)
 
 if __name__ == "__main__":
     main_modeling()
