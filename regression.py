@@ -70,23 +70,22 @@ def predict(model,X_train):
 
     generos = [c for c in X_train.columns if c not in ['year', 'votes'] and not c.startswith('certificate')]
     print(f"Gêneros disponiveis: {generos}")
-    genero_input= input("Gênero: ")
+    genero_input= input("Gênero: ").strip()
+    lista_generos_usuario = [g.strip() for g in genero_input.split(',')]
 
-    coluna_encontrada = None
-    for col in X_train.columns:
-        if col.lower() == genero_input.lower():
-            coluna_encontrada = col
-            break
-
-    if not coluna_encontrada:
-        print(f"Erro: Gênero '{genero_input}' não encontrado.")
-        return
-    
+    colunas_encontradas = []
+    for g_usuario in lista_generos_usuario:
+        # Procura nas colunas REAIS do modelo
+        for col_modelo in X_train.columns:
+            if g_usuario.lower() == col_modelo.lower():
+                colunas_encontradas.append(col_modelo)
+                break # Achou o gênero, para de procurar e vai para o próximo
+        
 
     year_input = int(input("Digite o Ano de Lançamento: "))
     input_data = pd.DataFrame(0, index=[0], columns=X_train.columns)
  
-    input_data[coluna_encontrada] = 1
+    input_data[colunas_encontradas] = 1
     input_data['year'] = year_input
     input_data['votes'] = X_train['votes'].median() #usamos a mediana nos votos para nao penalizar a nota
     
@@ -94,7 +93,7 @@ def predict(model,X_train):
     prediction = model.predict(input_data)[0]
     
     print("\nRESULTADO DA SIMULAÇÃO")
-    print(f"Jogo: Gênero {coluna_encontrada}, Ano {year_input}")
+    print(f"Jogo: Gênero {colunas_encontradas}, Ano {year_input}")
     print(f"NOTA PREVISTA: {prediction:.2f} / 10.0")  
 
     return
