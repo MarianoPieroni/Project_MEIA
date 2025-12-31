@@ -69,7 +69,7 @@ def predict(model,X_train):
     print("\nFazer Previsão de rating")
 
     generos = [c for c in X_train.columns if c not in ['year', 'votes'] and not c.startswith('certificate')]
-    print(f"Gênero disponiveis: {generos}")
+    print(f"Gêneros disponiveis: {generos}")
     genero_input= input("Gênero: ")
 
     coluna_encontrada = None
