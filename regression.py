@@ -100,14 +100,34 @@ def predict(model,X_train):
     return
 
 
+def analyze(model, feature_names):
+    print("\nANÁLISE")
+    
+    coefs = pd.DataFrame({
+        'Feature': feature_names,
+        'Coefficient': model.coef_
+    })
+    
+    # Ordenar por impacto absoluto
+    coefs['Coefficient'] = coefs['Coefficient'].round(2)
+    coefs = coefs.sort_values(by='Coefficient', ascending=False)
+
+    print("\nTop 5 Fatores que aumentam a nota:")
+    print(coefs.head(5).to_string(index=False))
+    
+    print("\nTop 5 Fatores que diminuem a nota:")
+    print(coefs.tail(5).to_string(index=False))
+
+
 def main_modeling():
     #importar EDA
     df_clean = dp.main() 
     
     df_model = prepare_features(df_clean)
     model, X_train, y_test, y_pred = run_linear_regression(df_model)
-
+    analyze(model,X_train.columns) 
     predict(model, X_train)
+    
 
 if __name__ == "__main__":
     main_modeling()
