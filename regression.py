@@ -32,8 +32,7 @@ def prepare_features(df_clean):
     print(f"Colunas finais para o modelo ({df_model.shape[1]}): {df_model.columns.tolist()}")
     return df_model
 
-def run_linear_regression(df_model):
-    
+def treinar_dados(df_model):
     #dividir base
     target = 'rating'
     X = df_model.drop(columns=[target]) #teste 
@@ -45,7 +44,13 @@ def run_linear_regression(df_model):
     print(f"\nDivisão (80/20)")
     print(f"Treino: {X_train.shape[0]} jogos")
     print(f"Teste:  {X_test.shape[0]} jogos")
+    return  X_train, X_test, y_train, y_test
 
+def run_linear_regression(df_model):
+
+    # Divisão (80/20)
+    X_train, X_test, y_train, y_test = treinar_dados(df_model)
+    
     # Criar e Treinar o Modelo
     model = LinearRegression()
     model.fit(X_train, y_train)
